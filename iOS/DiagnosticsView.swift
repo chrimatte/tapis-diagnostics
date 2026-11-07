@@ -2,6 +2,7 @@ import SwiftUI
 
 struct DiagnosticsView: View {
     @StateObject private var model = Diagnostics()
+    @State private var showOtherDevices = false
     @Environment(\.scenePhase) private var scenePhase
     var body: some View {
         NavigationStack {
@@ -20,15 +21,15 @@ struct DiagnosticsView: View {
                 Section("2. Seleziona la macchina") {
                     Text("RSSI aiuta a confrontare i segnali, non misura la distanza né identifica la macchina. Avvicinati alla console e confronta nome e identificativo.").font(.caption)
                     if model.devices.isEmpty { Text("Nessun dispositivo trovato. Se dopo la scansione la macchina non compare, vai al passaggio 4 e condividi comunque il rapporto.").foregroundStyle(.secondary) }
-                    ForEach(model.devices) { device in
-                        Button { model.select(device) } label: {
-                            VStack(alignment: .leading, spacing: 5) {
-                                Text(device.name).font(.headline)
-                                Text(String(device.id.uuidString.prefix(8))).font(.caption.monospaced())
-                                Text(device.rssi.map { "\($0) dBm · \(Signal.label($0))" } ?? "Segnale non disponibile")
-                                Text("Rilevato alle \(device.seen.formatted(date: .omitted, time: .standard))\(model.scanning ? "" : " · scansione ferma")").font(.caption)
-                            }.padding(.vertical, 4)
-                        }.disabled(model.connected || (!model.scanning && Date().timeIntervalSince(device.seen) > 30))
+                    ForEach(model.devices.prefix(5)) { device in
+                        deviceRow(device)
+                    }
+                    if model.devices.count > 5 {
+                        DisclosureGroup("Altri dispositivi (\(model.devices.count - 5))", isExpanded: $showOtherDevices) {
+                            ForEach(model.devices.dropFirst(5)) { device in
+                                deviceRow(device)
+                            }
+                        }
                     }
                 }
                 }
@@ -56,9 +57,22 @@ struct DiagnosticsView: View {
                 }
             }.navigationTitle("Tapis Scan")
         }
+        .onChange(of: model.scanning) { scanning in
+            if scanning { showOtherDevices = false }
+        }
         .onChange(of: scenePhase) { phase in
             if phase != .active { model.disconnect() }
         }
+    }
+    private func deviceRow(_ device: NearbyDevice) -> some View {
+        Button { model.select(device) } label: {
+            VStack(alignment: .leading, spacing: 5) {
+                Text(device.name).font(.headline)
+                Text(String(device.id.uuidString.prefix(8))).font(.caption.monospaced())
+                Text(device.rssi.map { "\($0) dBm · \(Signal.label($0))" } ?? "Segnale non disponibile")
+                Text("Rilevato alle \(device.seen.formatted(date: .omitted, time: .standard))\(model.scanning ? "" : " · scansione ferma")").font(.caption)
+            }.padding(.vertical, 4)
+        }.disabled(model.connected || (!model.scanning && Date().timeIntervalSince(device.seen) > 30))
     }
     private func metricRow(_ metric: Metric, now: Date) -> some View {
         let reading = model.live.readings[metric]
