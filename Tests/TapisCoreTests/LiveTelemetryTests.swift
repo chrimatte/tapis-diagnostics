@@ -47,6 +47,6 @@ final class LiveTelemetryTests: XCTestCase {
     func testSignalUnavailable() {
         XCTAssertNil(Signal.valid(127))
         XCTAssertEqual(Signal.valid(-65), -65)
-        XCTAssertEqual(Signal.label(-50), "Forte")
+        XCTAssertEqual(Signal.label(-50), "Strong")
     }
 }

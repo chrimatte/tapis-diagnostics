@@ -1,26 +1,37 @@
 # Tapis Scan
 
-App iPhone in SwiftUI per scoprire quali interfacce Bluetooth Low Energy espone un tapis roulant e osservare la telemetria FTMS disponibile. Utile per una prima verifica di compatibilità, senza inviare comandi di movimento.
+<img src="iOS/Assets.xcassets/AppIcon.appiconset/AppIcon.png" alt="Tapis Scan app icon: a treadmill with wireless signal arcs" width="112">
 
-**Progetto sperimentale:** installazione su iPhone e simulazione verificate; compatibilità con tapis roulant reali ancora da verificare. L’interfaccia è in italiano.
+An iPhone app built with SwiftUI to discover a treadmill's Bluetooth Low Energy interfaces and inspect available FTMS telemetry. Check compatibility without sending movement commands.
 
-## Cosa fa
+**Experimental:** installation on iPhone and simulated telemetry have been verified. Compatibility with real treadmills has not yet been verified. The interface is in English.
 
-- Scansiona dispositivi BLE con nome, identificativo locale, RSSI e orario dell’ultimo avvistamento.
-- Aggiorna l’elenco ogni 3 secondi: ordina il primo gruppo per intensità del segnale e mantiene poi le posizioni stabili. I nuovi dispositivi vengono aggiunti in fondo, ordinati all’interno del nuovo gruppo. Mostra i primi due e raccoglie gli altri in un elenco espandibile. Richiede una selezione esplicita prima del collegamento.
-- Continua a raccogliere advertising e RSSI nel rapporto senza rallentare le notifiche della telemetria. Ferma scansione applica gli ultimi avvistamenti e congela l’elenco; una nuova scansione riparte da zero.
-- Elenca servizi e caratteristiche GATT, con proprietà numeriche.
-- Sottoscrive le notifiche FTMS Treadmill Data (`1826/2ACD`).
-- Mostra velocità, distanza cumulativa, inclinazione, frequenza cardiaca, energia, tempo macchina, potenza e velocità media quando ricevuti. Calcola separatamente il passo dalla velocità.
-- Segnala metriche mai ricevute, non aggiornate da oltre 5 secondi e valori precedenti alla disconnessione.
-- Salva ed esporta un rapporto testuale con timestamp, advertising, notifiche grezze e valori interpretati.
-- Offre dati simulati attraverso lo stesso parser, senza hardware.
+## Screenshots
 
-Un RSSI di −50 dBm è più forte di −80 dBm: **non è una misura della distanza né una prova dell’identità della macchina**. Gli identificativi Core Bluetooth sono locali, non indirizzi MAC.
+Actual captures from the running iOS Simulator. Bluetooth scanning requires a physical iPhone; the telemetry shown below is explicitly simulated and is not evidence of treadmill compatibility.
 
-## Installazione
+| Scanning instructions | Simulated live telemetry |
+| --- | --- |
+| <img src="docs/images/scanning.png" alt="English scanning instructions and empty device list in the simulator" width="280"> | <img src="docs/images/telemetry-simulation.png" alt="Live telemetry screen marked SIMULATION, with example speed and derived pace" width="280"> |
 
-Servono un Mac con Xcode, un iPhone con iOS 16 o successivo e il proprio account Apple per la firma. Il nucleo SwiftPM richiede Swift 6. Il progetto è stato compilato con Xcode 26.6 e SDK iOS 26.5; l’app è stata installata e aperta su iPhone 12 con iOS 26.5.2. Le versioni minime dichiarate non sono state provate fisicamente.
+## Features
+
+- Discover BLE devices with advertised names, local identifiers, RSSI and last-seen times.
+- Refresh the list every 3 seconds. Sort the initial batch by signal strength, then keep existing rows in place. Append new devices, sorted within each new batch.
+- Show two devices initially, with the rest in an expandable list. Connecting always requires explicit selection.
+- Keep collecting advertising and RSSI for the report without slowing telemetry notifications. **Stop scanning** applies the latest discoveries and freezes the list; a new scan starts from scratch.
+- Enumerate GATT services and characteristics, including numeric property flags.
+- Subscribe to FTMS Treadmill Data notifications (`1826/2ACD`).
+- Display speed, cumulative machine distance, incline, heart rate, energy, machine time, power and average speed when received. Calculate pace separately from speed.
+- Mark metrics as never received, stale after 5 seconds, or last known values after disconnection.
+- Save and share a text report containing timestamps, advertising, raw notifications and parsed readings.
+- Try simulated data through the same parser without hardware.
+
+An RSSI of −50 dBm is stronger than −80 dBm: **it is not a distance measurement or proof of device identity**. Core Bluetooth identifiers are local identifiers, not MAC addresses.
+
+## Installation
+
+You need a Mac with Xcode, an iPhone running iOS 16 or later, and your own Apple account for signing. The SwiftPM core requires Swift 6. The project has been built with Xcode 26.6 and the iOS 26.5 SDK; the app has been installed and opened on an iPhone 12 running iOS 26.5.2. The declared minimum OS versions have not been tested on hardware.
 
 ```sh
 git clone https://github.com/chrimatte/tapis-diagnostics.git
@@ -28,35 +39,35 @@ cd tapis-diagnostics
 open Tapis.xcodeproj
 ```
 
-1. Seleziona lo scheme **Tapis**.
-2. In **Signing & Capabilities**, seleziona il tuo Team e, se necessario, scegli un Bundle Identifier univoco.
-3. Collega l’iPhone, autorizza il Mac e abilita Developer Mode se richiesto da iOS.
-4. Seleziona l’iPhone come destinazione e premi **Run**. Autorizza il profilo sviluppatore e l’accesso Bluetooth se richiesto.
+1. Select the **Tapis** scheme.
+2. In **Signing & Capabilities**, select your Team and choose a unique Bundle Identifier if needed.
+3. Connect your iPhone, trust the Mac, and enable Developer Mode if prompted by iOS.
+4. Select the iPhone as the run destination and press **Run**. Trust your developer profile and allow Bluetooth access if prompted.
 
-Il progetto non contiene certificati o un Team di firma preimpostato. Il simulatore permette di provare la UI e i dati simulati, non la scansione BLE reale. Non è disponibile una distribuzione App Store o TestFlight.
+No certificates or signing Team are included. The simulator supports the UI and simulated telemetry, not real BLE scanning. There is no App Store or TestFlight distribution.
 
-## Prima prova
+## First test
 
-L’app guida la prova con quattro passaggi numerati: scansione, selezione, verifica dati e condivisione del rapporto.
+The app guides you through four numbered steps: scan, select, check data, and share a report.
 
-1. Vicino alla console, premi **Scansiona BLE** e confronta nome, identificativo e RSSI. Se non riesci a identificare la macchina, evita collegamenti casuali.
-2. Tocca il dispositivo: la scansione termina e l’app tenta il collegamento.
-3. Mantieni l’app in primo piano. Osserva se arrivano pacchetti FTMS; alcuni dati potrebbero comparire solo durante l’uso della macchina.
-4. Se consentito dalla palestra, avvia il tapis dalla sua console e confronta i valori. L’app non avvia né arresta il nastro.
-5. Premi **Prepara rapporto aggiornato**, poi **Condividi rapporto preparato**. La condivisione usa una copia dei dati raccolti fino alla preparazione.
+1. Near the console, tap **Scan BLE** and compare names, identifiers and RSSI. Avoid connecting at random if you cannot identify the machine.
+2. Tap a device: scanning stops and the app attempts to connect.
+3. Keep the app in the foreground. Watch for FTMS packets; some data may only appear while the machine is in use. If your gym permits it, start the treadmill from its console and compare the readings. The app does not start or stop the belt.
+4. Tap **Prepare updated report**, then **Share prepared report**. Sharing uses a snapshot of the data collected up to preparation time. Review identifiers before sharing publicly.
 
-Per provare senza hardware, usa **Prova dati simulati**. I valori sono esplicitamente etichettati; **Disconnetti** ferma anche la simulazione.
+To try the app without hardware, tap **Try simulated data**. Example readings are explicitly labelled; **Disconnect** also stops the simulation. If the machine does not appear or sends no data, you can still share the diagnostic report.
 
-## Limiti e privacy
+## Limitations and privacy
 
-- Il collegamento audio Bluetooth non dimostra la disponibilità di telemetria BLE. L’assenza nella scansione richiede di verificare modello, modalità di associazione e tipo di Bluetooth.
-- Solo FTMS Treadmill Data è interpretato; non tutti i suoi campi sono visualizzati. I servizi proprietari vengono elencati, ma non decodificati o sottoscritti automaticamente. Nessun supporto Technogym/MyRun è dichiarato.
-- La velocità è riferita dalla macchina e potrebbe essere nominale o un setpoint. Distanza e tempo sono contatori della macchina, non totali di una sessione registrata dall’app. «Mai ricevuto» non significa «non supportato».
-- Passando fuori dal primo piano la diagnostica disconnette il dispositivo. Non riprende automaticamente. Non sono implementati controllo remoto, allenamenti strutturati, registrazione attività o esportazione FIT: appartengono a un progetto distinto.
-- Nessun backend o invio automatico. I rapporti contengono identificativi e advertising anche di dispositivi vicini: rivedili e anonimizzali prima di condividerli o allegarli a una issue pubblica.
-- Ogni apertura crea un rapporto nei Documenti dell’app, accessibile tramite File/Finder. Limite di 10 MB per rapporto, segnalato dalla UI; i file precedenti non vengono cancellati automaticamente. L’anteprima mostra solo le ultime righe. Elimina manualmente i rapporti non più necessari.
+- Bluetooth audio pairing does not prove BLE telemetry is available. If the machine does not appear, check its model, pairing mode and Bluetooth type.
+- Only FTMS Treadmill Data is parsed; not every field is displayed. Proprietary services are listed but are not automatically subscribed to or decoded. Technogym/MyRun compatibility is not claimed.
+- Speed is machine-reported and may be nominal or a setpoint. Distance and time are machine counters, not totals for a session recorded by the app. “Never received” does not mean “unsupported”.
+- Leaving the foreground disconnects the diagnostic session. It does not resume automatically. Remote control, structured workouts, activity recording and FIT export are outside this diagnostic app's scope.
+- No backend or automatic uploads. Reports include identifiers and advertising from nearby devices: review and anonymize them before sharing or attaching them to public issues.
+- Each app launch creates a report in the app's Documents folder, accessible through Files/Finder. Each report is limited to 10 MB, with an in-app warning when full. Previous reports are not automatically deleted. The preview shows only recent lines; manually remove reports you no longer need.
+- Device names and operating-system error messages come from external sources and may use other languages. Existing reports are preserved in their original language.
 
-## Sviluppo e verifiche
+## Development and verification
 
 ```sh
 swift test
@@ -64,16 +75,16 @@ xcodebuild -project Tapis.xcodeproj -scheme Tapis -sdk iphonesimulator \
   -configuration Debug -derivedDataPath DerivedData CODE_SIGNING_ALLOWED=NO build
 ```
 
-Dodici test XCTest coprono parsing, campi opzionali, pacchetti troncati/malformati, valori firmati, dati non aggiornati, passo a velocità zero, RSSI non disponibile e journal. Due test verificano inoltre stabilità delle righe, accorpamento degli avvistamenti ripetuti e ripartenza da un elenco vuoto. Build simulatore e build iPhone firmata verificate localmente; nessuna certificazione di conformità FTMS o accessibilità.
+The 12 XCTest cases cover parsing, optional fields, truncated/malformed packets, signed values, stale readings, zero-speed pace, unavailable RSSI, journaling, stable device ordering, coalescing repeated discoveries and resetting the list. Simulator and signed iPhone builds have been verified locally. This is not FTMS compliance or accessibility certification.
 
-`Sources/TapisCore` contiene parser e modelli; `iOS` contiene trasporto BLE, simulazione e UI; `Tests` contiene fixture sintetiche. `project.yml` consente di rigenerare il progetto con `xcodegen generate`; XcodeGen non serve per aprire il progetto incluso. Nessuna dipendenza di terze parti nel pacchetto runtime.
+`Sources/TapisCore` contains parsers and models; `iOS` contains BLE transport, simulation and UI; `Tests` contains synthetic fixtures. `project.yml` can regenerate the project with `xcodegen generate`; XcodeGen is not required to open the included project. There are no third-party runtime package dependencies.
 
-Vedi [CONTRIBUTING.md](CONTRIBUTING.md) per convenzioni e controlli locali.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for conventions, checks and screenshot reproduction. Existing Git history is preserved; earlier commits may contain Italian text.
 
-## Licenza e riferimenti
+## License and references
 
-[MIT](LICENSE). Icona creata con generazione di immagini AI per questo progetto. Nessun codice degli adattatori qdomyos-zwift o di SDK Garmin è incorporato. Nessuna affiliazione con produttori di macchine fitness.
+[MIT](LICENSE). The app icon was created using AI image generation for this project. No qdomyos-zwift adapter code or Garmin SDK code is included. This project is not affiliated with fitness equipment manufacturers.
 
 - [Apple Core Bluetooth](https://developer.apple.com/documentation/corebluetooth)
 - [Bluetooth SIG Assigned Numbers](https://www.bluetooth.com/specifications/assigned-numbers/)
-- [XML Treadmill Data di Bluetooth SIG, copia pubblicata](https://raw.githubusercontent.com/oesmith/gatt-xml/master/org.bluetooth.characteristic.treadmill_data.xml), consultato come riferimento del formato, non incluso nel progetto.
+- [Bluetooth SIG Treadmill Data XML, published copy](https://raw.githubusercontent.com/oesmith/gatt-xml/master/org.bluetooth.characteristic.treadmill_data.xml), consulted as a format reference, not included in the project.

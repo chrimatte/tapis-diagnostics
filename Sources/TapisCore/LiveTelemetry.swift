@@ -4,15 +4,15 @@ public enum Metric: String, CaseIterable, Sendable {
     case speed, pace, distance, incline, heartRate, energy, elapsed, power, averageSpeed
     public var title: String {
         switch self {
-        case .speed: return "Velocità · km/h"
-        case .pace: return "Passo derivato · min/km"
-        case .distance: return "Contatore macchina · m"
-        case .incline: return "Inclinazione · %"
-        case .heartRate: return "Frequenza cardiaca · bpm"
-        case .energy: return "Energia · kcal"
-        case .elapsed: return "Tempo macchina · s"
-        case .power: return "Potenza · W"
-        case .averageSpeed: return "Velocità media macchina · km/h"
+        case .speed: return "Speed · km/h"
+        case .pace: return "Derived pace · min/km"
+        case .distance: return "Machine distance counter · m"
+        case .incline: return "Incline · %"
+        case .heartRate: return "Heart rate · bpm"
+        case .energy: return "Energy · kcal"
+        case .elapsed: return "Machine time · s"
+        case .power: return "Power · W"
+        case .averageSpeed: return "Machine average speed · km/h"
         }
     }
     func value(in sample: Sample) -> Double? {
@@ -54,6 +54,6 @@ public struct LiveTelemetry: Sendable {
 public enum Signal {
     public static func valid(_ rssi: Int) -> Int? { (-127...20).contains(rssi) ? rssi : nil }
     public static func label(_ rssi: Int) -> String {
-        rssi >= -60 ? "Forte" : (rssi >= -80 ? "Medio" : "Debole")
+        rssi >= -60 ? "Strong" : (rssi >= -80 ? "Medium" : "Weak")
     }
 }

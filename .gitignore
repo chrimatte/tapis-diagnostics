@@ -5,6 +5,7 @@ DerivedData/
 xcuserdata/
 .env
 .env.*
-# Rapporti diagnostici reali, da conservare soltanto localmente
-diagnostica-*.txt
+# Real diagnostic reports must remain local
+diagnostics-*.txt
 Tapis-*.txt
+diagnostica-*.txt
