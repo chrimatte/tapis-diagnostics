@@ -19,6 +19,7 @@ struct DiagnosticsView: View {
                 }
                 if !model.connected {
                 Section("2. Seleziona la macchina") {
+                    Text("Elenco aggiornato ogni 3 secondi, con posizioni stabili. I nuovi dispositivi vengono aggiunti in fondo. Per congelare i valori, premi Ferma scansione.").font(.caption)
                     Text("RSSI aiuta a confrontare i segnali, non misura la distanza né identifica la macchina. Avvicinati alla console e confronta nome e identificativo.").font(.caption)
                     if model.devices.isEmpty { Text("Nessun dispositivo trovato. Se dopo la scansione la macchina non compare, vai al passaggio 4 e condividi comunque il rapporto.").foregroundStyle(.secondary) }
                     ForEach(model.devices.prefix(2)) { device in

@@ -9,7 +9,7 @@ Non includere log BLE reali, credenziali o dati personali nelle fixture.
 ## Controlli
 
 - `swift test`: suite XCTest del nucleo; richiede una toolchain Swift/SDK coerente.
-  Con Xcode 26.6 i dieci test del nucleo passano.
+  Con Xcode 26.6 i dodici test del nucleo passano.
 - `git diff --cached --check`: whitespace e marcatori di conflitto aggiunti.
 - Gitleaks 8.30.1: `gitleaks git --pre-commit --staged --redact=100 --no-banner .`.
 

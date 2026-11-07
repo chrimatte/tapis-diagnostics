@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		035316463772B1BDF1FD52A4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3492F654694E54C3FF261EF0 /* Assets.xcassets */; };
 		6F6CE2328301B0F0BC1DBC3A /* Diagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B27AB6CC744378374070D68 /* Diagnostics.swift */; };
+		8D7EAB83AC3F5D82F60A6A9F /* StableDiscoveryList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF664D589191DE9C688FB3F4 /* StableDiscoveryList.swift */; };
 		ACE2FC9D1FB00658845E6327 /* Telemetry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B91E11BCBD9A3B98AB957C0 /* Telemetry.swift */; };
 		EABEAC0CB328604AB2AEB934 /* LiveTelemetry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1135EA6E9DF4DBCF3D6342 /* LiveTelemetry.swift */; };
 		F08D7D3136D7A570D2DBBA3E /* DiagnosticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D17D2B94FF1BD90636914902 /* DiagnosticsView.swift */; };
@@ -21,6 +22,7 @@
 		99A1EAD2D145217BDC963178 /* Tapis.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Tapis.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B27AB6CC744378374070D68 /* Diagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Diagnostics.swift; sourceTree = "<group>"; };
 		D17D2B94FF1BD90636914902 /* DiagnosticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsView.swift; sourceTree = "<group>"; };
+		DF664D589191DE9C688FB3F4 /* StableDiscoveryList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StableDiscoveryList.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -45,6 +47,7 @@
 			isa = PBXGroup;
 			children = (
 				2A1135EA6E9DF4DBCF3D6342 /* LiveTelemetry.swift */,
+				DF664D589191DE9C688FB3F4 /* StableDiscoveryList.swift */,
 				7B91E11BCBD9A3B98AB957C0 /* Telemetry.swift */,
 			);
 			name = TapisCore;
@@ -134,6 +137,7 @@
 				6F6CE2328301B0F0BC1DBC3A /* Diagnostics.swift in Sources */,
 				F08D7D3136D7A570D2DBBA3E /* DiagnosticsView.swift in Sources */,
 				EABEAC0CB328604AB2AEB934 /* LiveTelemetry.swift in Sources */,
+				8D7EAB83AC3F5D82F60A6A9F /* StableDiscoveryList.swift in Sources */,
 				ACE2FC9D1FB00658845E6327 /* Telemetry.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

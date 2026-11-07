@@ -25,6 +25,8 @@ final class Diagnostics: NSObject, ObservableObject, CBCentralManagerDelegate, C
     private var central: CBCentralManager!
     private var selected: CBPeripheral?
     private var timer: Timer?
+    private var scanRefreshTimer: Timer?
+    private var discoveries = StableDiscoveryList<NearbyDevice>()
     private var simulationTick = 0
     private var file: FileHandle?
     private var logURL: URL?
@@ -42,7 +44,7 @@ final class Diagnostics: NSObject, ObservableObject, CBCentralManagerDelegate, C
         central = CBCentralManager(delegate: self, queue: .main)
         if ProcessInfo.processInfo.arguments.contains("--demo") { startSimulation() }
     }
-    deinit { timer?.invalidate(); try? file?.close() }
+    deinit { scanRefreshTimer?.invalidate(); timer?.invalidate(); try? file?.close() }
     private func log(_ message: String) {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -75,21 +77,25 @@ final class Diagnostics: NSObject, ObservableObject, CBCentralManagerDelegate, C
         case .unsupported: status = "Bluetooth non disponibile su questo dispositivo"
         default: status = "Bluetooth in inizializzazione"
         }
-        if !canScan { connected = false; scanning = false }
+        if !canScan { stopScanRefresh(); connected = false; scanning = false }
         log(status)
     }
     func scan() {
         guard canScan else { return }
         disconnect()
-        devices = []; scanning = true
+        devices = []; discoveries = StableDiscoveryList(); scanning = true
+        scanRefreshTimer = Timer.scheduledTimer(withTimeInterval: StableDiscoveryList<NearbyDevice>.refreshInterval, repeats: true) { [weak self] _ in
+            guard let self, self.scanning else { return }
+            self.publishDiscoveries()
+        }
         central.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
         status = "Scansione BLE · seleziona la macchina"
     }
-    func stop() { central.stopScan(); scanning = false; if !connected { status = "Scansione arrestata" } }
+    func stop() { central.stopScan(); stopScanRefresh(); scanning = false; if !connected { status = "Scansione arrestata" } }
     func disconnect() {
         timer?.invalidate(); timer = nil
         simulated = false; connected = false
-        central.stopScan(); scanning = false
+        central.stopScan(); stopScanRefresh(); scanning = false
         if let selected { central.cancelPeripheralConnection(selected) }
         selected = nil
         status = "Disconnesso · dati precedenti non attuali"
@@ -106,10 +112,18 @@ final class Diagnostics: NSObject, ObservableObject, CBCentralManagerDelegate, C
         guard scanning else { return }
         let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String ?? peripheral.name ?? "Senza nome"
         let device = NearbyDevice(peripheral: peripheral, name: name, rssi: Signal.valid(RSSI.intValue), seen: Date())
-        if let index = devices.firstIndex(where: { $0.id == device.id }) { devices[index] = device }
-        else { devices.append(device) }
-        devices.sort { ($0.rssi ?? -999) > ($1.rssi ?? -999) }
+        discoveries.receive(device)
         log("ADV \(device.id) \(name) RSSI=\(RSSI) \(advertisementData)")
+    }
+    private func publishDiscoveries() {
+        devices = discoveries.publish { left, right in
+            let lhs = left.rssi ?? -999, rhs = right.rssi ?? -999
+            return lhs == rhs ? left.id.uuidString < right.id.uuidString : lhs > rhs
+        }
+    }
+    private func stopScanRefresh() {
+        scanRefreshTimer?.invalidate(); scanRefreshTimer = nil
+        if scanning { publishDiscoveries() }
     }
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         guard peripheral.identifier == selected?.identifier else { central.cancelPeripheralConnection(peripheral); return }

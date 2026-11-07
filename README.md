@@ -7,7 +7,8 @@ App iPhone in SwiftUI per scoprire quali interfacce Bluetooth Low Energy espone 
 ## Cosa fa
 
 - Scansiona dispositivi BLE con nome, identificativo locale, RSSI e orario dell’ultimo avvistamento.
-- Ordina i dispositivi per intensità del segnale: mostra subito i primi due e raccoglie gli altri in un elenco espandibile. Richiede una selezione esplicita prima del collegamento.
+- Aggiorna l’elenco ogni 3 secondi: ordina il primo gruppo per intensità del segnale e mantiene poi le posizioni stabili. I nuovi dispositivi vengono aggiunti in fondo, ordinati all’interno del nuovo gruppo. Mostra i primi due e raccoglie gli altri in un elenco espandibile. Richiede una selezione esplicita prima del collegamento.
+- Continua a raccogliere advertising e RSSI nel rapporto senza rallentare le notifiche della telemetria. Ferma scansione applica gli ultimi avvistamenti e congela l’elenco; una nuova scansione riparte da zero.
 - Elenca servizi e caratteristiche GATT, con proprietà numeriche.
 - Sottoscrive le notifiche FTMS Treadmill Data (`1826/2ACD`).
 - Mostra velocità, distanza cumulativa, inclinazione, frequenza cardiaca, energia, tempo macchina, potenza e velocità media quando ricevuti. Calcola separatamente il passo dalla velocità.
@@ -63,7 +64,7 @@ xcodebuild -project Tapis.xcodeproj -scheme Tapis -sdk iphonesimulator \
   -configuration Debug -derivedDataPath DerivedData CODE_SIGNING_ALLOWED=NO build
 ```
 
-Dieci test XCTest coprono parsing, campi opzionali, pacchetti troncati/malformati, valori firmati, dati non aggiornati, passo a velocità zero, RSSI non disponibile e journal. Build simulatore e build iPhone firmata verificate localmente; nessuna certificazione di conformità FTMS o accessibilità.
+Dodici test XCTest coprono parsing, campi opzionali, pacchetti troncati/malformati, valori firmati, dati non aggiornati, passo a velocità zero, RSSI non disponibile e journal. Due test verificano inoltre stabilità delle righe, accorpamento degli avvistamenti ripetuti e ripartenza da un elenco vuoto. Build simulatore e build iPhone firmata verificate localmente; nessuna certificazione di conformità FTMS o accessibilità.
 
 `Sources/TapisCore` contiene parser e modelli; `iOS` contiene trasporto BLE, simulazione e UI; `Tests` contiene fixture sintetiche. `project.yml` consente di rigenerare il progetto con `xcodegen generate`; XcodeGen non serve per aprire il progetto incluso. Nessuna dipendenza di terze parti nel pacchetto runtime.
 
