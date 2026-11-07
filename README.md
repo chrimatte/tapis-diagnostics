@@ -1,47 +1,76 @@
-# Tapis — prima base diagnostica
+# Tapis Scan
 
-Stato: **implementazione parziale**, non MVP completo. Nessuna prova su hardware Technogym.
+App iPhone in SwiftUI per scoprire quali interfacce Bluetooth Low Energy espone un tapis roulant e osservare la telemetria FTMS disponibile. Utile per una prima verifica di compatibilità, senza inviare comandi di movimento.
 
-## Esecuzione
+**Progetto sperimentale:** installazione su iPhone e simulazione verificate; compatibilità con tapis roulant reali ancora da verificare. L’interfaccia è in italiano.
 
-`swift test` verifica il nucleo Swift su macOS. Per iPhone: installare Xcode completo, creare un progetto iOS App SwiftUI chiamato Tapis, deployment target iOS 16, sostituire il file App generato con `iOS/Diagnostics.swift`. Aggiungere in Info → Custom iOS Target Properties `NSBluetoothAlwaysUsageDescription` con testo «Legge la telemetria del tapis roulant selezionato». Scegliere il proprio team di firma e l’iPhone 12, abilitare Developer Mode quando richiesto, eseguire Run. Non aggiungere modalità background in questa fase. Il sorgente iOS non è stato compilato in questo ambiente.
+## Cosa fa
 
-## Prova sul posto
+- Scansiona dispositivi BLE con nome, identificativo locale, RSSI e orario dell’ultimo avvistamento.
+- Ordina i dispositivi per intensità del segnale e richiede una selezione esplicita prima del collegamento.
+- Elenca servizi e caratteristiche GATT, con proprietà numeriche.
+- Sottoscrive le notifiche FTMS Treadmill Data (`1826/2ACD`).
+- Mostra velocità, distanza cumulativa, inclinazione, frequenza cardiaca, energia, tempo macchina, potenza e velocità media quando ricevuti. Calcola separatamente il passo dalla velocità.
+- Segnala metriche mai ricevute, non aggiornate da oltre 5 secondi e valori precedenti alla disconnessione.
+- Salva ed esporta un rapporto testuale con timestamp, advertising, notifiche grezze e valori interpretati.
+- Offre dati simulati attraverso lo stesso parser, senza hardware.
 
-1. Annotare modello, console, firmware e versione iOS. Accertare le regole della palestra.
-2. Aprire la diagnostica in primo piano, scansionare e selezionare esplicitamente la macchina. Gli identificativi Core Bluetooth sono locali, non MAC address.
-3. Condividere il rapporto di advertising/GATT. Contiene identificativi anche dei dispositivi vicini: rivederlo prima di divulgarlo.
-4. Le sole notifiche sottoscritte automaticamente sono FTMS Treadmill Data 1826/2ACD. Nessun comando di movimento viene scritto.
-5. Avviare eventualmente il nastro dalla console secondo le normali procedure della palestra, confrontare console e notifiche, fermare dalla console.
-6. Ripetere con pausa e disconnessione. Non interpretare l’assenza di BLE come incompatibilità: verificare associazione, audio/Classic e documentazione del modello.
+Un RSSI di −50 dBm è più forte di −80 dBm: **non è una misura della distanza né una prova dell’identità della macchina**. Gli identificativi Core Bluetooth sono locali, non indirizzi MAC.
 
-## Componenti e limiti
+## Installazione
 
-- Parser FTMS con controllo dei flag, troncamenti, velocità opzionale, distanza e inclinazione firmata; campioni con origine e timestamp.
-- Journal JSONL sincronizzato su disco, recupero delle righe complete; non ancora collegato alla UI.
-- Diagnostica Core Bluetooth con selezione esplicita, advertising, servizi, proprietà GATT numeriche, timestamp e condivisione testuale. Log attualmente in memoria, non persistente e non limitato: usare sessioni diagnostiche brevi.
-- Mancano registratore con pause/contatori, dashboard, cronologia, FIT, replay, editor e motore intervalli, controlli automatici e relativo test completo. La qualità per singola metrica resta da modellare.
-- Controllo velocità, inclinazione e trasferimento programmi: **da accertare**, non implementati. Nessun protocollo proprietario è dichiarato compatibile.
-- Nessuna funzione è verificata su hardware reale; parser e journal sono verificabili con fixture. Build iOS e UI non verificate.
+Servono un Mac con Xcode, un iPhone con iOS 16 o successivo e il proprio account Apple per la firma. Il nucleo SwiftPM richiede Swift 6. Il progetto è stato compilato con Xcode 26.6 e SDK iOS 26.5; l’app è stata installata e aperta su iPhone 12 con iOS 26.5.2. Le versioni minime dichiarate non sono state provate fisicamente.
 
-## Riferimenti e decisioni iniziali
+```sh
+git clone https://github.com/chrimatte/tapis-diagnostics.git
+cd tapis-diagnostics
+open Tapis.xcodeproj
+```
 
-[Garmin FIT Swift SDK](https://github.com/garmin/fit-swift-sdk): Package.swift consultato richiede Swift 6, dichiara iOS 14 e macOS 12, dipende da swift-collections. Compatibilità teorica con iPhone 12, da verificare con toolchain Xcode. La richiesta a LICENSE ha restituito 404: licenza **non ancora verificata**, SDK non incorporato. Prima di implementare FIT leggere la licenza effettiva, fissare la revisione e seguire il [cookbook Activity](https://developer.garmin.com/fit/articles/cookbook/encoding_activity_files.html), poi decodificare con strumento indipendente verificando CRC e riepiloghi.
+1. Seleziona lo scheme **Tapis**.
+2. In **Signing & Capabilities**, seleziona il tuo Team e, se necessario, scegli un Bundle Identifier univoco.
+3. Collega l’iPhone, autorizza il Mac e abilita Developer Mode se richiesto da iOS.
+4. Seleziona l’iPhone come destinazione e premi **Run**. Autorizza il profilo sviluppatore e l’accesso Bluetooth se richiesto.
 
-[qdomyos-zwift](https://github.com/cagnulein/qdomyos-zwift) e [python-pyftms](https://github.com/dudanov/python-pyftms) individuati come riferimenti; adattatori e licenze non ancora analizzati nel dettaglio. Nessun codice copiato. MyRun non prova compatibilità con la macchina della palestra; RFCOMM non va assunto accessibile da normali app iOS.
+Il progetto non contiene certificati o un Team di firma preimpostato. Il simulatore permette di provare la UI e i dati simulati, non la scansione BLE reale. Non è disponibile una distribuzione App Store o TestFlight.
 
-[Apple background BLE](https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/CoreBluetoothBackgroundProcessingForIOSApps/PerformingTasksWhileYourAppIsInTheBackground.html): gli eventi BLE non garantiscono un timer continuamente eseguito. L’eventuale automazione iniziale deve limitarsi al primo piano e sospendersi senza ripresa automatica dopo perdita di controllo. La macchina potrebbe continuare all’ultima impostazione.
+## Prima prova
 
-[Bluetooth SIG Assigned Numbers](https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Assigned_Numbers/out/en/index-en.html): identificativi FTMS; completare revisione della specifica normativa prima di dichiarare conformità.
+1. Vicino alla console, premi **Scansiona BLE** e confronta nome, identificativo e RSSI. Se non riesci a identificare la macchina, evita collegamenti casuali.
+2. Tocca il dispositivo: la scansione termina e l’app tenta il collegamento.
+3. Mantieni l’app in primo piano. Osserva se arrivano pacchetti FTMS; alcuni dati potrebbero comparire solo durante l’uso della macchina.
+4. Se consentito dalla palestra, avvia il tapis dalla sua console e confronta i valori. L’app non avvia né arresta il nastro.
+5. Premi **Prepara rapporto aggiornato**, poi **Condividi rapporto preparato**. La condivisione usa una copia dei dati raccolti fino alla preparazione.
 
-## Esito verifiche locali (7 novembre 2026)
+Per provare senza hardware, usa **Prova dati simulati**. I valori sono esplicitamente etichettati; **Disconnetti** ferma anche la simulazione.
 
-`swift test`: fallito prima dell'esecuzione dei test, linker del manifest PackageDescription con simbolo mancante. `swiftc -typecheck`: fallito per duplicazione SwiftBridging e incompatibilità dichiarata tra SDK e compilatore dei Command Line Tools. **Nessun test risulta passato**. `xcodebuild -version`: Xcode completo non selezionato, attivi soltanto Command Line Tools. Occorre ripristinare una toolchain coerente; non sono state modificate impostazioni globali del Mac. La cartella iniziale era vuota e senza repository Git: nessun diff Git o commit disponibile.
+## Limiti e privacy
 
-## Informazioni comunicate dall’utente
+- Il collegamento audio Bluetooth non dimostra la disponibilità di telemetria BLE. L’assenza nella scansione richiede di verificare modello, modalità di associazione e tipo di Bluetooth.
+- Solo FTMS Treadmill Data è interpretato; non tutti i suoi campi sono visualizzati. I servizi proprietari vengono elencati, ma non decodificati o sottoscritti automaticamente. Nessun supporto Technogym/MyRun è dichiarato.
+- La velocità è riferita dalla macchina e potrebbe essere nominale o un setpoint. Distanza e tempo sono contatori della macchina, non totali di una sessione registrata dall’app. «Mai ricevuto» non significa «non supportato».
+- Passando fuori dal primo piano la diagnostica disconnette il dispositivo. Non riprende automaticamente. Non sono implementati controllo remoto, allenamenti strutturati, registrazione attività o esportazione FIT: appartengono a un progetto distinto.
+- Nessun backend o invio automatico. I rapporti contengono identificativi e advertising anche di dispositivi vicini: rivedili e anonimizzali prima di condividerli o allegarli a una issue pubblica.
+- Ogni apertura crea un rapporto nei Documenti dell’app, accessibile tramite File/Finder. Limite di 10 MB per rapporto, segnalato dalla UI; i file precedenti non vengono cancellati automaticamente. L’anteprima mostra solo le ultime righe. Elimina manualmente i rapporti non più necessari.
 
-- iPhone 12 con iOS **26.5**, versione dichiarata dall’utente.
-- Xcode in download; installazione e selezione della toolchain ancora da verificare.
-- Technogym **Excite**, modello da identificare fra **700, 900 e 1000**, configurazione **Unity**. Generazione della console e firmware ancora sconosciuti.
-- Queste informazioni non confermano FTMS, telemetria accessibile, controllo velocità/inclinazione o trasferimento programmi. Non applicare automaticamente gli adattatori MyRun.
-- Alla prossima visita annotare la denominazione esatta dalla targhetta e la versione software dalla schermata informativa della console, senza modificarne le impostazioni. Non occorre condividere il numero di serie.
+## Sviluppo e verifiche
+
+```sh
+swift test
+xcodebuild -project Tapis.xcodeproj -scheme Tapis -sdk iphonesimulator \
+  -configuration Debug -derivedDataPath DerivedData CODE_SIGNING_ALLOWED=NO build
+```
+
+Dieci test XCTest coprono parsing, campi opzionali, pacchetti troncati/malformati, valori firmati, dati non aggiornati, passo a velocità zero, RSSI non disponibile e journal. Build simulatore e build iPhone firmata verificate localmente; nessuna certificazione di conformità FTMS o accessibilità.
+
+`Sources/TapisCore` contiene parser e modelli; `iOS` contiene trasporto BLE, simulazione e UI; `Tests` contiene fixture sintetiche. `project.yml` consente di rigenerare il progetto con `xcodegen generate`; XcodeGen non serve per aprire il progetto incluso. Nessuna dipendenza di terze parti nel pacchetto runtime.
+
+Vedi [CONTRIBUTING.md](CONTRIBUTING.md) per convenzioni e controlli locali.
+
+## Licenza e riferimenti
+
+[MIT](LICENSE). Icona creata con generazione di immagini AI per questo progetto. Nessun codice degli adattatori qdomyos-zwift o di SDK Garmin è incorporato. Nessuna affiliazione con produttori di macchine fitness.
+
+- [Apple Core Bluetooth](https://developer.apple.com/documentation/corebluetooth)
+- [Bluetooth SIG Assigned Numbers](https://www.bluetooth.com/specifications/assigned-numbers/)
+- [XML Treadmill Data di Bluetooth SIG, copia pubblicata](https://raw.githubusercontent.com/oesmith/gatt-xml/master/org.bluetooth.characteristic.treadmill_data.xml), consultato come riferimento del formato, non incluso nel progetto.

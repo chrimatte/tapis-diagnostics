@@ -1,0 +1,32 @@
+name: Tapis
+options:
+  deploymentTarget:
+    iOS: '16.0'
+settings:
+  base:
+    SWIFT_VERSION: '5.0'
+targets:
+  Tapis:
+    type: application
+    platform: iOS
+    sources:
+      - iOS
+      - Sources/TapisCore
+    settings:
+      base:
+        INFOPLIST_KEY_CFBundleDisplayName: Tapis Scan
+        PRODUCT_BUNDLE_IDENTIFIER: com.chrimatte.tapis
+        TARGETED_DEVICE_FAMILY: '1'
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: Legge la telemetria del tapis roulant selezionato.
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UIFileSharingEnabled: YES
+        INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_STYLE: Automatic
+schemes:
+  Tapis:
+    build:
+      targets:
+        Tapis: all

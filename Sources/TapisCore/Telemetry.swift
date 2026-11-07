@@ -6,6 +6,12 @@ public struct Sample: Codable, Equatable, Sendable {
     public let speedKmh: Double?
     public let distanceMeters: Double?
     public let inclinePercent: Double?
+    public var heartRateBpm: Double? = nil
+    public var energyKcal: Double? = nil
+    public var elapsedSeconds: Double? = nil
+    public var powerWatts: Double? = nil
+    public var averageSpeedKmh: Double? = nil
+    public var flags: Int = 0
     public var paceSecondsPerKm: Double? { speedKmh.flatMap { $0 > 0 ? 3600 / $0 : nil } }
 }
 public enum ParseError: Error { case truncated, reservedFlags, trailingBytes }
@@ -22,16 +28,30 @@ public enum TreadmillData {
         let flags = try read(2)
         guard flags & 0xE000 == 0 else { throw ParseError.reservedFlags }
         let speed = flags & 1 == 0 ? Double(try read(2)) / 100 : nil
-        if flags & 2 != 0 { _ = try read(2) }
+        let average = flags & 2 != 0 ? Double(try read(2)) / 100 : nil
         let distance = flags & 4 != 0 ? Double(try read(3)) : nil
         var incline: Double?
         if flags & 8 != 0 {
             incline = Double(Int16(bitPattern: UInt16(try read(2)))) / 10
             _ = try read(2)
         }
-        for (bit, size) in [(4,4),(5,1),(6,1),(7,5),(8,1),(9,1),(10,2),(11,2),(12,4)] where flags & (1 << bit) != 0 { _ = try read(size) }
+        for (bit, size) in [(4,4),(5,1),(6,1)] where flags & (1 << bit) != 0 { _ = try read(size) }
+        var energy: Double?
+        if flags & 128 != 0 {
+            let raw = try read(2)
+            energy = raw == 65535 ? nil : Double(raw)
+            _ = try read(3)
+        }
+        let heart = flags & 256 != 0 ? Double(try read(1)) : nil
+        if flags & 512 != 0 { _ = try read(1) }
+        let elapsed = flags & 1024 != 0 ? Double(try read(2)) : nil
+        if flags & 2048 != 0 { _ = try read(2) }
+        var power: Double?
+        if flags & 4096 != 0 { _ = try read(2); power = Double(Int16(bitPattern: UInt16(try read(2)))) }
         guard offset == bytes.count else { throw ParseError.trailingBytes }
-        return Sample(timestamp: time, source: source, speedKmh: speed, distanceMeters: distance, inclinePercent: incline)
+        return Sample(timestamp: time, source: source, speedKmh: speed, distanceMeters: distance, inclinePercent: incline,
+                      heartRateBpm: heart, energyKcal: energy, elapsedSeconds: elapsed,
+                      powerWatts: power, averageSpeedKmh: average, flags: flags)
     }
 }
 
