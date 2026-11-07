@@ -7,7 +7,7 @@ App iPhone in SwiftUI per scoprire quali interfacce Bluetooth Low Energy espone 
 ## Cosa fa
 
 - Scansiona dispositivi BLE con nome, identificativo locale, RSSI e orario dell’ultimo avvistamento.
-- Ordina i dispositivi per intensità del segnale: mostra subito i primi cinque e raccoglie gli altri in un elenco espandibile. Richiede una selezione esplicita prima del collegamento.
+- Ordina i dispositivi per intensità del segnale: mostra subito i primi due e raccoglie gli altri in un elenco espandibile. Richiede una selezione esplicita prima del collegamento.
 - Elenca servizi e caratteristiche GATT, con proprietà numeriche.
 - Sottoscrive le notifiche FTMS Treadmill Data (`1826/2ACD`).
 - Mostra velocità, distanza cumulativa, inclinazione, frequenza cardiaca, energia, tempo macchina, potenza e velocità media quando ricevuti. Calcola separatamente il passo dalla velocità.

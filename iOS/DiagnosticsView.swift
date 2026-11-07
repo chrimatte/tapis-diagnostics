@@ -21,12 +21,12 @@ struct DiagnosticsView: View {
                 Section("2. Seleziona la macchina") {
                     Text("RSSI aiuta a confrontare i segnali, non misura la distanza né identifica la macchina. Avvicinati alla console e confronta nome e identificativo.").font(.caption)
                     if model.devices.isEmpty { Text("Nessun dispositivo trovato. Se dopo la scansione la macchina non compare, vai al passaggio 4 e condividi comunque il rapporto.").foregroundStyle(.secondary) }
-                    ForEach(model.devices.prefix(5)) { device in
+                    ForEach(model.devices.prefix(2)) { device in
                         deviceRow(device)
                     }
-                    if model.devices.count > 5 {
-                        DisclosureGroup("Altri dispositivi (\(model.devices.count - 5))", isExpanded: $showOtherDevices) {
-                            ForEach(model.devices.dropFirst(5)) { device in
+                    if model.devices.count > 2 {
+                        DisclosureGroup("Altri dispositivi (\(model.devices.count - 2))", isExpanded: $showOtherDevices) {
+                            ForEach(model.devices.dropFirst(2)) { device in
                                 deviceRow(device)
                             }
                         }
