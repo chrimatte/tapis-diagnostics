@@ -36,6 +36,8 @@ Il progetto non contiene certificati o un Team di firma preimpostato. Il simulat
 
 ## Prima prova
 
+L’app guida la prova con quattro passaggi numerati: scansione, selezione, verifica dati e condivisione del rapporto.
+
 1. Vicino alla console, premi **Scansiona BLE** e confronta nome, identificativo e RSSI. Se non riesci a identificare la macchina, evita collegamenti casuali.
 2. Tocca il dispositivo: la scansione termina e l’app tenta il collegamento.
 3. Mantieni l’app in primo piano. Osserva se arrivano pacchetti FTMS; alcuni dati potrebbero comparire solo durante l’uso della macchina.

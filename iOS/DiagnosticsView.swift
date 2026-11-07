@@ -6,9 +6,10 @@ struct DiagnosticsView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section {
+                Section("1. Avvia la scansione") {
                     Text(model.status).font(.headline)
                     Text("Sola lettura · nessun comando di movimento").font(.caption)
+                    Text("Avvicinati alla console, premi Scansiona BLE e attendi circa 20–30 secondi. Poi seleziona la macchina nel passaggio 2.").font(.subheadline)
                     Button("Scansiona BLE", action: model.scan).disabled(!model.canScan || model.scanning)
                     if model.scanning { Button("Ferma scansione", action: model.stop) }
                     if model.connected { Button("Disconnetti", action: model.disconnect) }
@@ -16,9 +17,9 @@ struct DiagnosticsView: View {
                     Text("Tieni l’app in primo piano durante la prova.").font(.caption)
                 }
                 if !model.connected {
-                Section("Dispositivi · segnale più forte prima") {
+                Section("2. Seleziona la macchina") {
                     Text("RSSI aiuta a confrontare i segnali, non misura la distanza né identifica la macchina. Avvicinati alla console e confronta nome e identificativo.").font(.caption)
-                    if model.devices.isEmpty { Text("Nessun dispositivo trovato. Avvia una scansione vicino alla console.").foregroundStyle(.secondary) }
+                    if model.devices.isEmpty { Text("Nessun dispositivo trovato. Se dopo la scansione la macchina non compare, vai al passaggio 4 e condividi comunque il rapporto.").foregroundStyle(.secondary) }
                     ForEach(model.devices) { device in
                         Button { model.select(device) } label: {
                             VStack(alignment: .leading, spacing: 5) {
@@ -31,7 +32,8 @@ struct DiagnosticsView: View {
                     }
                 }
                 }
-                Section("Telemetria") {
+                Section("3. Verifica i dati") {
+                    Text("Dopo il collegamento, attendi circa 30 secondi. Se consentito dalla palestra, avvia il tapis dalla console e confronta i valori. Se non arrivano dati, condividi comunque il rapporto al passaggio 4.").font(.subheadline)
                     Text(model.ftms)
                     Text("\(model.live.packets) pacchetti validi · \(model.invalidPackets) non interpretati").font(.caption)
                     if model.simulated { Label("SIMULAZIONE · valori di esempio", systemImage: "testtube.2").font(.headline) }
@@ -44,7 +46,8 @@ struct DiagnosticsView: View {
                     }
                     Text("La distanza e il tempo sono i contatori della macchina, non della sessione. La velocità può essere nominale o un setpoint. Passo calcolato dalla velocità, non misurato.").font(.caption)
                 }
-                Section("Rapporto") {
+                Section("4. Prepara e condividi il rapporto") {
+                    Text("Premi prima Prepara rapporto aggiornato, poi Condividi rapporto preparato. Salvalo in File o condividilo per l’analisi; l’app non lo invia automaticamente. Controlla gli identificativi prima di pubblicarlo.").font(.subheadline)
                     if let error = model.storageError { Text(error).foregroundStyle(.red) }
                     Button("Prepara rapporto aggiornato", action: model.prepareExport)
                     if let url = model.exportURL { ShareLink("Condividi rapporto preparato", item: url) }
