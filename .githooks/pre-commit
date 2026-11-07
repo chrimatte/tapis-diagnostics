@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+git diff --cached --check
+command -v gitleaks >/dev/null 2>&1 || { echo 'Gitleaks richiesto per verificare i segreti prima del commit.' >&2; exit 1; }
+gitleaks git --pre-commit --staged --redact=100 --no-banner .
