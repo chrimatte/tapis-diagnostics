@@ -81,6 +81,13 @@ The 12 XCTest cases cover parsing, optional fields, truncated/malformed packets,
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for conventions, checks and screenshot reproduction. Existing Git history is preserved; earlier commits may contain Italian text.
 
+## Contributors
+
+- [chrimatte](https://github.com/chrimatte) — project creator and maintainer; product direction and on-device validation.
+- **OpenAI Codex** — AI-assisted implementation, tests, documentation, and development tooling, guided by the maintainer.
+
+Codex is credited here as an AI development tool, not as a human maintainer.
+
 ## License and references
 
 [MIT](LICENSE). The app icon was created using AI image generation for this project. No qdomyos-zwift adapter code or Garmin SDK code is included. This project is not affiliated with fitness equipment manufacturers.
